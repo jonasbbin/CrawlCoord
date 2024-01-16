@@ -7,8 +7,7 @@ import os
 
 class Identifier():
     """
-    Class to identify given strings to a matching item in the list
-    i.e. locations, coordinates, plantnames
+    Class to identify community/canton, to a given coordinates
     """
     def __init__(self) -> None:
         """

@@ -5,7 +5,7 @@ from PyQt5.QtGui import QPalette, QColor
 import pandas as pd
 import numpy as np
 """
-Designes the window that acts like the filemaker
+Main window of the application
 """
 class Coord2Community(QWidget):
     def __init__(self,):
@@ -92,14 +92,7 @@ class Coord2Community(QWidget):
         
         path_title_2 = QTextEdit(self)
         path_title_2.setPlainText("""Dieses Tool erschafft Gemeinde-, Kantons- und Landeseinträge zu gegebenen Koordinaten.""")
-        """
-File auswählen:                             Wähle die Excel-Datei welche gelesen werden sollte und für die Berechnung benützt wird.
-Input-Spaltennamen:                   Spaltennamen der Koordinaten in der Exceltabelle. 
-Output-Spaltennammen:             Spaltennamen der respektiven Kolonnen in der neuen Exceltabelle. Falls die Namen bereits existieren werden alte Kolonnen überschrieben.
-Alte Koordinaten:                         Wandelt Koordinaten im alten Koordinatensystem in neue um. Ansonsten werden sie ignoriert.
-Automatische Fehlerkorrektur:   Korrigiert automatisch Koordinateneinträge welche zu kurz oder lang sind, bis sie im neuen Koordinatensystem sind.
-Starten:                                         Startet das Programm. Das neue File wird im gleichen Ordner mit dem Zusatz '_adapted' generiert.
-        """
+
         path_title_2.setReadOnly(True)
         path_title_2.setStyleSheet(f"background-color: {sys_background_color.name()};")
         path_title_2.setGeometry(0, 0, 50, 50)  
@@ -311,9 +304,6 @@ Starten:                                         Startet das Programm. Das neue 
         self.close()
 
 
-# Input coordinates
-#input_x = 	2737180  # Replace with your X coordinate
-#input_y = 	1252606# Gossau
 def main():
     app = QApplication(sys.argv)
     ex = Coord2Community()
