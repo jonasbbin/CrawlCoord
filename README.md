@@ -10,6 +10,7 @@ The application can be called with:
 `python CrawlCoord.py`
 
 <img width="449" alt="Layout_of_the_application" src="https://github.com/jonasbbin/CrawlCoord/assets/126403545/3728d227-8c78-4b1c-b463-b3d69a3a5df2">
+
 ## Dependecies 
 - pandas
 - numpy
