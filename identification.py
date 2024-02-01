@@ -57,12 +57,12 @@ class Identifier():
             point = Point(x, y)  # Create a Shapely Point object
             for index, row in self.geo_data.iterrows():
                 if row['geometry'].contains(point):
-                
                     return row['name'], self.canton_dict[int(row["kantonsnummer"])], row['icc'] # Replace 'Canton' with the column containing canton names
+            print("sdlfkjsdfl")
             return "", "", ""
     
         except Exception as e:
-            
+            print(e)
             return "", "", ""
 
 if __name__ == '__main__':

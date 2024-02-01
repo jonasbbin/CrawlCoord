@@ -26,10 +26,13 @@ class Coord2Community(QWidget):
         """
         Updates Gemeinde, Kanton and Land
         """
-        self.gemeinde, self.canton, self.country = self.identifier.get_gemeinde_region_canton(int(self.x_coord_entry.text()), int(self.y_coord_entry.text()))
-        self.gemeinde_entry.setText(self.gemeinde)
-        self.canton_entry.setText(self.canton)
-        self.land_entry.setText(self.country)
+        try:
+            self.gemeinde, self.canton, self.country = self.identifier.get_gemeinde_region_canton(int(self.x_coord_entry.text()), int(self.y_coord_entry.text()))
+            self.gemeinde_entry.setText(self.gemeinde)
+            self.canton_entry.setText(self.canton)
+            self.land_entry.setText(self.country)
+        except Exception:
+            QMessageBox.critical(self, 'Error', f'Überprüfe die Koordinaten. Es müssen Zahlen im neuen Koordinatensystem der Schweiz sein.')
 
     
     def init_ui(self):
@@ -54,26 +57,31 @@ class Coord2Community(QWidget):
         self.x_coord_entry.setText(str("X-Koordinate"))
         self.x_coord_entry.setStyleSheet("color: white")  # Set initial text color to grey
         self.x_coord_entry.selectAll()  # Select all text when entry is focused
+        self.x_coord_entry.setToolTip('Spaltennamen der X Koordinaten in der Exceltabelle.')
 
         self.y_coord_entry = QLineEdit(self)
         self.y_coord_entry.setText(str("Y-Koordinate"))
         self.y_coord_entry.setStyleSheet("color: white")  # Set initial text color to grey
         self.y_coord_entry.selectAll()  # Select all text when entry is focused
+        self.y_coord_entry.setToolTip('Spaltennamen der Y Koordinaten in der Exceltabelle.')
 
         self.gemeinde_entry = QLineEdit(self)
         self.gemeinde_entry.setText("Gemeinde")
         self.gemeinde_entry.setStyleSheet("color: white")  # Set initial text color to grey
         self.gemeinde_entry.selectAll()  # Select all text when entry is focused
+        self.gemeinde_entry.setToolTip('Spaltennamen der Gemeinde in der Output Exceltabelle.')
 
         self.canton_entry = QLineEdit(self)
         self.canton_entry.setText("Kanton")
         self.canton_entry.setStyleSheet("color: white")  # Set initial text color to grey
         self.canton_entry.selectAll()  # Select all text when entry is focused
+        self.canton_entry.setToolTip('Spaltennamen der Gemeinde in der Output Exceltabelle.')
 
         self.land_entry = QLineEdit(self)
         self.land_entry.setText("Land")
         self.land_entry.setStyleSheet("color: white")  # Set initial text color to grey
         self.land_entry.selectAll()  # Select all text when entry is focused
+        self.land_entry.setToolTip('Spaltennamen der Gemeinde in der Output Exceltabelle.')
 
         start_button = QPushButton("Starten", self)
         start_button.setToolTip("Startet das Programm. Das neue File wird im gleichen Ordner mit dem Zusatz '_adapted' generiert.")
@@ -105,7 +113,8 @@ class Coord2Community(QWidget):
 
         self.file_path_entry = QLineEdit(self)
         self.file_path_entry.setText("Filepfad")
-        self.file_path_entry.setStyleSheet("color: white")  
+        self.file_path_entry.setStyleSheet("color: white")
+        self.file_path_entry.setToolTip("Filepfad der zulesenden Excel Datei. Sie darf NICHT mehrere Mappen beinhalten")  
         grid_layout.addWidget(self.file_path_entry, 2, 1)
 
 
@@ -120,11 +129,13 @@ class Coord2Community(QWidget):
         self.x_coord_name = QLineEdit(self)
         self.x_coord_name.setText("X")
         self.x_coord_name.setStyleSheet("color: white")  # Set initial text color to grey
+        self.x_coord_name.setToolTip('X Koordinaten des Ortes')
         grid_layout.addWidget(self.x_coord_name, 4, 0)
 
         self.y_coord_name = QLineEdit(self)
         self.y_coord_name.setText("Y")
         self.y_coord_name.setStyleSheet("color: white")  # Set initial text color to grey
+        self.y_coord_name.setToolTip('Y Koordinaten des Ortes')
         grid_layout.addWidget(self.y_coord_name, 4, 1)
         
         koordtitle_2 = QLineEdit(self)
@@ -205,6 +216,21 @@ class Coord2Community(QWidget):
         self.show()
         self.raise_()
 
+        # Create a QMessageBox
+        msg_box = QMessageBox()
+        msg_box.setWindowTitle("Notification")
+        msg_box.setText(f"Willkommen. Dieses Tool kann nur Excel Datein mit einem Arbeitsblatt bearbeiten! Zusätzlich hat das Programm Tooltipps. (Bei Unklarheiten über das betroffene Feld fahren)")
+
+        # Add an "Okay" button
+        okay_button = QPushButton("Okay")
+        msg_box.addButton(okay_button, QMessageBox.AcceptRole)
+
+        # Connect the button to close the message box
+        okay_button.clicked.connect(msg_box.accept)
+
+        # Show the message box
+        msg_box.exec_()
+
     def checkboxStateChanged_coords(self):
         self.old_cords = not self.old_cords
         #print("Old coords:", self.old_cords)
@@ -218,7 +244,7 @@ class Coord2Community(QWidget):
         Let's the user select a file
         """
         file_dialog = QFileDialog()
-        file_path, _ = file_dialog.getOpenFileName(self, 'Select a file')
+        file_path, _ = file_dialog.getOpenFileName(self, "Open Excel File", "", "Excel Files (*.xlsx *.xls)")
         self.file_path_entry.setText(file_path)
 
     def adaptation(self):
@@ -266,21 +292,24 @@ class Coord2Community(QWidget):
         try: 
             spider_data = pd.read_excel(filename)
             
-        except Exception:
-            QMessageBox.critical(self, 'Error', f'Datei konnte nicht gelesen werden. Überprüfe den Dateipfad und die Datei.')
+        except Exception as e:
+            QMessageBox.critical(self, 'Error', f'Datei konnte nicht gelesen werden. Überprüfe den Dateipfad und die Datei. Fehlercode: {e}')
             return
 
         try: 
             identifier = Identifier()
             spider_data = spider_data.apply(lambda row:  modify_coords(row, x_name, y_name, self.old_cords, self.corr), axis=1)
+            print("test0")
+            print(spider_data.head(2))
+            print(spider_data.columns)
             gemeinden = spider_data.apply(lambda row: identifier.get_gemeinde_region_canton(row[x_name], row[y_name]), axis=1)
-
+            print("test1")
             gemeinden = [list(t) for t in gemeinden]
             gemeinden = np.array(gemeinden)
             spider_data[commun_out] = gemeinden[:,0]
             spider_data[canton_out] = gemeinden[:,1]
             spider_data[country_out] = gemeinden[:,2]
-        
+            print("test2")
             spider_data.to_excel(f"{filename[0:-5]}_adapted.xlsx", index=False)
 
             # Create a QMessageBox
@@ -299,7 +328,7 @@ class Coord2Community(QWidget):
             result = msg_box.exec_()
         except Exception as e:
             print(e)
-            QMessageBox.critical(self, 'Error', f'Fehler beim vearbeiten der Koordinaten. Überprüfe Spaltennamen oder Koordinaten.')
+            QMessageBox.critical(self, 'Error', f'Fehler beim vearbeiten der Koordinaten. Überprüfe Datei, Spaltennamen oder Koordinaten. Beachte dass das Programm keine Excel Dateien mit mehreren Arbeitsmatten unterstützt. Fehlercode: {e}')
     def on_submit(self):
         self.close()
 
